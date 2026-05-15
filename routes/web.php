@@ -24,12 +24,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Mata Kuliah
     Route::resource('mata-kuliah', MataKuliahController::class);
 
-    // Jadwal (nested resource)
+    // Jadwal
+    Route::get('/jadwal', [JadwalController::class, 'indexAll'])->name('jadwal.index');
     Route::resource('mata-kuliah.jadwal', JadwalController::class)->except(['show']);
 
     // Tugas
