@@ -95,13 +95,29 @@ class TugasController extends Controller
     {
         $this->authorizeOwner($tugas);
 
-        $length = strlen($tugas->judul_tugas.' '.($tugas->deskripsi ?? ''));
-        $estimate = max(1, min(12, (int) ceil($length / 120)));
+        // 1. Panggil Agent AI
+        $agent = new \App\Ai\Agents\TaskLoadEstimator();
+        $prompt = "Tugas: {$tugas->judul_tugas}, Deskripsi: {$tugas->deskripsi}";
+        
+        try {
+            // 2. Minta hasil ke Gemini (format JSON schema)
+            $result = $agent->prompt($prompt);
+            $data = json_decode(trim(str_replace(['```json', '```'], '', (string) $result)), true);
 
-        $tugas->update(['estimated_hours' => $estimate]);
 
-        return back()->with('success', "Estimasi waktu tugas telah diperbarui: {$estimate} jam.");
+            // 3. Update database
+            $tugas->update([
+                'estimated_hours' => $data['estimated_hours'],
+                'prioritas' => $data['prioritas'],
+            ]);
+
+            return back()->with('success', "AI Estimasi berhasil: {$data['estimated_hours']} jam, Prioritas {$data['prioritas']}. Alasan AI: {$data['alasan']}");
+        } catch (\Exception $e) {
+            // Jika API limit/error
+            return back()->with('error', "Gagal melakukan estimasi AI: " . $e->getMessage());
+        }
     }
+
 
     protected function validateTugas(Request $request)
     {

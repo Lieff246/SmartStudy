@@ -27,9 +27,8 @@ class DashboardController extends Controller
             ->get();
 
         $overloadRisk = $totalTugas ? min(100, round(($deadlineDekat / $totalTugas) * 100)) : 0;
-        $aiInsight = $deadlineDekat
-            ? "Kamu memiliki $deadlineDekat deadline dalam 3 hari ke depan. Prioritaskan tugas yang paling mendesak terlebih dahulu."
-            : 'Tidak ada deadline kritis dalam 3 hari ke depan. Fokus pada tugas yang sedang berjalan.';
+        $aiInsight = (string) (new \App\Ai\Agents\StudyTimeRecommender)->prompt("Tugasku: " . json_encode($user->tugas()->where('status', '!=', 'selesai')->get()));
+
 
         return view('dashboard', compact(
             'totalTugas',

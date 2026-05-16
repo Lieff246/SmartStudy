@@ -38,4 +38,5 @@ Route::middleware('auth')->group(function () {
 
     // Reminder
     Route::patch('/reminders/{reminder}/read', [ReminderController::class, 'markAsRead'])->name('reminders.read');
+
 });
